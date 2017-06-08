@@ -1,0 +1,20 @@
+{
+  "name": "hub-socket-netduino",
+  "version": "1.0.0",
+  "description": "Hub socket to connect netduino Micro Framework .NET",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juniortads/hub-socket-netduino.git"
+  },
+  "author": "Joel Júnior",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juniortads/hub-socket-netduino/issues"
+  },
+  "homepage": "https://github.com/juniortads/hub-socket-netduino#readme"
+}
