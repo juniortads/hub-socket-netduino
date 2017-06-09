@@ -1,39 +1,25 @@
-net = require('net')
+'use strict';
 
-var sockets = [];
+const express = require('express');
+const SocketServer = require('ws').Server;
+const path = require('path');
 
-// Create a TCP socket listener
-var s = net.Server(function (socket) {
+const PORT = process.env.PORT || 3000;
+const INDEX = path.join(__dirname, 'index.html');
 
-    // Add the new client socket connection to the array of
-    // sockets
-    sockets.push(socket);
+const server = express()
+    .use((req, res) => res.sendFile(INDEX))
+    .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
-    // 'data' is an event that means that a message was just sent by the 
-    // client application
-    socket.on('data', function (msg_sent) {
-        // Loop through all of our sockets and send the data
-        
-        var buff = new Buffer(msg_sent);
-        console.log(buff.toString('utf8'));
+const wss = new SocketServer({ server });
 
-        for (var i = 0; i < sockets.length; i++) {
-            // Don't send the data back to the original sender
-            if (sockets[i] == socket) // don't send the message to yourself
-                continue;
-            // Write the msg sent by chat client
-            sockets[i].write(msg_sent);
-        }
-    });
-    // Use splice to get rid of the socket that is ending.
-    // The 'end' event means tcp client has disconnected.
-    socket.on('end', function () {
-        var i = sockets.indexOf(socket);
-        sockets.splice(i, 1);
-    });
-
-
+wss.on('connection', (ws) => {
+    console.log('Client connected');
+    ws.on('close', () => console.log('Client disconnected'));
 });
 
-s.listen(8000);
-console.log('System waiting at http://localhost:8000');
+setInterval(() => {
+    wss.clients.forEach((client) => {
+        client.send(new Date().toTimeString());
+    });
+}, 1000);
