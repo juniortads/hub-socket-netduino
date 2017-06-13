@@ -1,21 +1,39 @@
-'use strict';
+net = require('net')
 
-const express = require('express');
-const socketIO = require('socket.io');
-const path = require('path');
+var sockets = [];
 
-const PORT = process.env.PORT || 3000;
-const INDEX = path.join(__dirname, 'index.html');
+// Create a TCP socket listener
+var s = net.Server(function (socket) {
 
-const server = express()
-    .use((req, res) => res.sendFile(INDEX))
-    .listen(PORT, () => console.log(`Listening on ${PORT}`));
+    // Add the new client socket connection to the array of
+    // sockets
+    sockets.push(socket);
 
-const io = socketIO(server);
+    // 'data' is an event that means that a message was just sent by the 
+    // client application
+    socket.on('data', function (msg_sent) {
+        // Loop through all of our sockets and send the data
+        
+        var buff = new Buffer(msg_sent);
+        console.log(buff.toString('utf8'));
 
-io.on('connection', (socket) => {
-    console.log('Client connected');
-    socket.on('disconnect', () => console.log('Client disconnected'));
+        for (var i = 0; i < sockets.length; i++) {
+            // Don't send the data back to the original sender
+            if (sockets[i] == socket) // don't send the message to yourself
+                continue;
+            // Write the msg sent by chat client
+            sockets[i].write(msg_sent);
+        }
+    });
+    // Use splice to get rid of the socket that is ending.
+    // The 'end' event means tcp client has disconnected.
+    socket.on('end', function () {
+        var i = sockets.indexOf(socket);
+        sockets.splice(i, 1);
+    });
+
+
 });
 
-setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
+s.listen(4000);
+console.log('System waiting at http://localhost:4000');
